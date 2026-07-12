@@ -71,13 +71,13 @@ class HighlighterApp:
 
     def next_profile(self) -> None:
         """Ciclado de perfiles vía atajo global (F9), sin pasar por Preferencias."""
-        names = self.store.profile_names()
-        if not names:
+        profile_ids = self.store.profile_ids()
+        if not profile_ids:
             return
-        current = self.store.active_profile_name()
-        index = names.index(current) if current in names else -1
-        next_name = names[(index + 1) % len(names)]
-        values = self.store.apply_profile(next_name)
+        current = self.store.active_profile_id()
+        index = profile_ids.index(current) if current in profile_ids else -1
+        next_id = profile_ids[(index + 1) % len(profile_ids)]
+        values = self.store.apply_profile(next_id)
         if values is not None:
             self._apply_values_to_cursor_state(values)
 

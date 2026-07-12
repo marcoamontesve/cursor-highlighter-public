@@ -8,11 +8,18 @@ como JSON en una sola key de QSettings, ya que el formato INI no maneja bien
 estructuras anidadas. Ademas se persiste cual es el perfil activo, para que
 el proceso overlay (que via hotkey puede ciclar de perfil sin pasar por la
 ventana de Preferencias) y el proceso principal vean siempre el mismo estado.
+
+Los perfiles built-in se identifican por un id estable en ingles (p.ej.
+"classic"), no por su nombre mostrado en pantalla: el nombre visible se
+traduce segun el idioma (ver config/i18n.py), pero el id persistido en disco
+tiene que ser el mismo sin importar en que idioma este la interfaz.
 """
 
 import json
 
 from PyQt6.QtCore import QSettings
+
+from cursor_highlighter.config.i18n import DEFAULT_LANGUAGE
 
 ORG = "cursor-highlighter"
 APP = "cursor-highlighter"
@@ -31,7 +38,7 @@ FIELDS = (
 )
 
 BUILTIN_PROFILES = {
-    "Clásico": {
+    "classic": {
         "shape": SHAPE_CIRCLE,
         "size": 60,
         "opacity": 0.6,
@@ -40,7 +47,7 @@ BUILTIN_PROFILES = {
         "left_click_color": "#4a9eff",
         "right_click_color": "#4aff8f",
     },
-    "Neón": {
+    "neon": {
         "shape": SHAPE_RING,
         "size": 70,
         "opacity": 0.9,
@@ -49,7 +56,7 @@ BUILTIN_PROFILES = {
         "left_click_color": "#00fff2",
         "right_click_color": "#eaff00",
     },
-    "Minimal": {
+    "minimal": {
         "shape": SHAPE_RING,
         "size": 36,
         "opacity": 0.5,
@@ -58,7 +65,7 @@ BUILTIN_PROFILES = {
         "left_click_color": "#ffffff",
         "right_click_color": "#ffffff",
     },
-    "Alto contraste": {
+    "high_contrast": {
         "shape": SHAPE_CIRCLE,
         "size": 90,
         "opacity": 1.0,
@@ -69,11 +76,12 @@ BUILTIN_PROFILES = {
     },
 }
 
-DEFAULT_PROFILE_NAME = "Clásico"
-DEFAULTS = BUILTIN_PROFILES[DEFAULT_PROFILE_NAME]
+DEFAULT_PROFILE_ID = "classic"
+DEFAULTS = BUILTIN_PROFILES[DEFAULT_PROFILE_ID]
 
 _ACTIVE_PROFILE_KEY = "active_profile"
 _CUSTOM_PROFILES_KEY = "custom_profiles_json"
+_LANGUAGE_KEY = "language"
 
 
 class SettingsStore:
@@ -97,6 +105,14 @@ class SettingsStore:
     def all(self) -> dict:
         return {key: self.get(key) for key in FIELDS}
 
+    # --- idioma --------------------------------------------------------------
+
+    def language(self) -> str:
+        return str(self._settings.value(_LANGUAGE_KEY, DEFAULT_LANGUAGE))
+
+    def set_language(self, language: str) -> None:
+        self._settings.setValue(_LANGUAGE_KEY, language)
+
     # --- perfiles -------------------------------------------------------------
 
     def custom_profiles(self) -> dict[str, dict]:
@@ -108,33 +124,36 @@ class SettingsStore:
         except (json.JSONDecodeError, TypeError):
             return {}
 
-    def profile_names(self) -> list[str]:
+    def profile_ids(self) -> list[str]:
         return list(BUILTIN_PROFILES) + list(self.custom_profiles())
 
-    def is_builtin(self, name: str) -> bool:
-        return name in BUILTIN_PROFILES
+    def is_builtin(self, profile_id: str) -> bool:
+        return profile_id in BUILTIN_PROFILES
 
-    def active_profile_name(self) -> str:
-        return str(self._settings.value(_ACTIVE_PROFILE_KEY, DEFAULT_PROFILE_NAME))
+    def active_profile_id(self) -> str:
+        return str(self._settings.value(_ACTIVE_PROFILE_KEY, DEFAULT_PROFILE_ID))
 
-    def profile_values(self, name: str) -> dict | None:
-        if name in BUILTIN_PROFILES:
-            return dict(BUILTIN_PROFILES[name])
-        return self.custom_profiles().get(name)
+    def profile_values(self, profile_id: str) -> dict | None:
+        if profile_id in BUILTIN_PROFILES:
+            return dict(BUILTIN_PROFILES[profile_id])
+        return self.custom_profiles().get(profile_id)
 
-    def apply_profile(self, name: str) -> dict | None:
-        """Marca `name` como perfil activo y persiste sus valores como estado
-        actual. Devuelve esos valores, o None si `name` no existe."""
-        values = self.profile_values(name)
+    def apply_profile(self, profile_id: str) -> dict | None:
+        """Marca `profile_id` como perfil activo y persiste sus valores como
+        estado actual. Devuelve esos valores, o None si no existe."""
+        values = self.profile_values(profile_id)
         if values is None:
             return None
         for key, value in values.items():
             self.set(key, value)
-        self._settings.setValue(_ACTIVE_PROFILE_KEY, name)
+        self._settings.setValue(_ACTIVE_PROFILE_KEY, profile_id)
         return values
 
     def save_custom_profile(self, name: str) -> None:
-        """Guarda el estado actual (self.all()) como perfil custom `name`."""
+        """Guarda el estado actual (self.all()) como perfil custom `name`.
+
+        Para los perfiles custom el id y el nombre mostrado son la misma
+        cadena (la que eligio el usuario), a diferencia de los built-in."""
         profiles = self.custom_profiles()
         profiles[name] = self.all()
         self._settings.setValue(_CUSTOM_PROFILES_KEY, json.dumps(profiles))
@@ -146,7 +165,7 @@ class SettingsStore:
             return
         profiles[new_name] = profiles.pop(old_name)
         self._settings.setValue(_CUSTOM_PROFILES_KEY, json.dumps(profiles))
-        if self.active_profile_name() == old_name:
+        if self.active_profile_id() == old_name:
             self._settings.setValue(_ACTIVE_PROFILE_KEY, new_name)
 
     def delete_custom_profile(self, name: str) -> None:
@@ -155,5 +174,5 @@ class SettingsStore:
             return
         del profiles[name]
         self._settings.setValue(_CUSTOM_PROFILES_KEY, json.dumps(profiles))
-        if self.active_profile_name() == name:
-            self._settings.setValue(_ACTIVE_PROFILE_KEY, DEFAULT_PROFILE_NAME)
+        if self.active_profile_id() == name:
+            self._settings.setValue(_ACTIVE_PROFILE_KEY, DEFAULT_PROFILE_ID)

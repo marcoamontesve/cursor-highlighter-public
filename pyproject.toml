@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cursor-highlighter"
 version = "0.1.0"
-description = "Resalta el cursor y anima los clicks en KDE Plasma Wayland"
+description = "Highlights the cursor and animates clicks on KDE Plasma Wayland"
 requires-python = ">=3.10"
 dependencies = [
     "PyQt6",

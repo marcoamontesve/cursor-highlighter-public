@@ -12,6 +12,7 @@ import time
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
 
+from cursor_highlighter.config.i18n import tr
 from cursor_highlighter.config.settings_window import SettingsWindow
 from cursor_highlighter.config.store import SettingsStore
 from cursor_highlighter.config.theme import DARK_STYLESHEET
@@ -25,7 +26,7 @@ OVERLAY_POLL_INTERVAL_S = 0.1
 DESKTOP_FILE_NAME = "cursor-highlighter"
 
 
-def _start_overlay_process() -> subprocess.Popen | None:
+def _start_overlay_process(language: str) -> subprocess.Popen | None:
     """Lanza el proceso overlay si todavia no hay uno corriendo. None si ya habia uno."""
     if overlay_running():
         return None
@@ -37,10 +38,10 @@ def _start_overlay_process() -> subprocess.Popen | None:
             return process
         time.sleep(OVERLAY_POLL_INTERVAL_S)
 
-    raise RuntimeError("El proceso overlay no respondio a tiempo por DBus.")
+    raise RuntimeError(tr("error.overlay_timeout", language))
 
 
-def _warn_if_devices_unavailable(tray: TrayIcon) -> None:
+def _warn_if_devices_unavailable(tray: TrayIcon, language: str) -> None:
     """Avisa por notificacion del sistema si falta permiso de /dev/input.
 
     El chequeo real que importa para el highlight corre en el proceso overlay
@@ -55,9 +56,8 @@ def _warn_if_devices_unavailable(tray: TrayIcon) -> None:
     if not devices.permission_errors:
         return
     tray.showMessage(
-        "Cursor Highlighter",
-        "No se detectan clicks: falta permiso para leer el mouse en /dev/input.\n"
-        "Corré 'sudo usermod -aG input $USER' y volvé a iniciar sesión.",
+        tr("app.name", language),
+        tr("warn.devices_unavailable", language),
         QSystemTrayIcon.MessageIcon.Warning,
         10000,
     )
@@ -77,18 +77,20 @@ def main() -> int:
     # la app: solo el tray decide cuando salir.
     app.setQuitOnLastWindowClosed(False)
 
+    store = SettingsStore()
+    language = store.language()
+
     try:
-        overlay_process = _start_overlay_process()
+        overlay_process = _start_overlay_process(language)
         # Se carga (o recarga) recien ahora, con el bridge DBus del overlay ya
         # registrado y escuchando: si el script de KWin empezara a mandar
         # CursorMoved antes de que exista un listener, esos eventos se
         # pierden en el aire.
         reload_bridge_script()
     except RuntimeError as error:
-        QMessageBox.critical(None, "Cursor Highlighter", str(error))
+        QMessageBox.critical(None, tr("app.name", language), str(error))
         return 1
 
-    store = SettingsStore()
     overlay = OverlayClient()
     settings_window = SettingsWindow(store, overlay)
 
@@ -103,9 +105,11 @@ def main() -> int:
             overlay_process.terminate()
         app.quit()
 
-    tray = TrayIcon(on_toggle=overlay.toggle_highlight, on_preferences=show_preferences, on_quit=quit_app)
+    tray = TrayIcon(
+        on_toggle=overlay.toggle_highlight, on_preferences=show_preferences, on_quit=quit_app, language=language
+    )
     tray.show()
-    _warn_if_devices_unavailable(tray)
+    _warn_if_devices_unavailable(tray, language)
 
     show_preferences()  # pedido: al iniciar la app, mostrar la interfaz de preferencias
 

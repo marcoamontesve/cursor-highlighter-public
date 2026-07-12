@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Instala cursor-highlighter: crea/actualiza el venv, lo instala en modo editable
-# y publica el .desktop para que aparezca en el lanzador de aplicaciones de KDE.
+# Installs cursor-highlighter: creates/updates the venv, installs it in
+# editable mode, and publishes the .desktop file so it shows up in KDE's
+# application launcher.
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,4 +22,4 @@ if command -v update-desktop-database >/dev/null 2>&1; then
     update-desktop-database "$APPS_DIR"
 fi
 
-echo "Listo. Buscá 'Cursor Highlighter' en el lanzador, o corré: $VENV_DIR/bin/cursor-highlighter"
+echo "Done. Look for 'Cursor Highlighter' in your launcher, or run: $VENV_DIR/bin/cursor-highlighter"
