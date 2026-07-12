@@ -7,6 +7,8 @@ to lose track of the mouse on screen.
 It's free and open source. If it's useful to you and you'd like to support
 the project, there's a tip jar here: [ko-fi.com/marcoamontesve](https://ko-fi.com/marcoamontesve) ☕
 
+![Preferences window](docs/screenshot.png)
+
 ## Features
 
 - Overlay always on top of every window (layer-shell), without stealing focus
