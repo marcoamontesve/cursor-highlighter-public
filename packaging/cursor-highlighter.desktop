@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Cursor Highlighter
+Comment=Resalta el cursor y anima los clicks en KDE Plasma Wayland
+Exec=%INSTALL_PREFIX%/.venv/bin/cursor-highlighter
+Icon=input-mouse
+Terminal=false
+Categories=Utility;
+StartupNotify=false
+X-KDE-StartupNotify=false
