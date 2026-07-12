@@ -4,6 +4,9 @@ Resalta el cursor y anima los clicks en **KDE Plasma Wayland**. Pensado para
 tutoriales, streams, presentaciones o clases grabadas, donde es fácil perder
 de vista el mouse en pantalla.
 
+Es gratis y de código abierto. Si te sirve y querés bancar el proyecto, hay
+un cafecito acá: [ko-fi.com/marcoamontesve](https://ko-fi.com/marcoamontesve) ☕
+
 ## Features
 
 - Overlay siempre encima de todas las ventanas (layer-shell), sin robar foco
