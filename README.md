@@ -13,7 +13,7 @@ the project, there's a tip jar here: [ko-fi.com/marcoamontesve](https://ko-fi.co
 
 - Overlay always on top of every window (layer-shell), without stealing focus
 - Ring animation on left/right click, with its own color for each
-- **Profiles**: 4 built-in themes (Classic, Neon, Minimal, High contrast) +
+- **Profiles**: 4 built-in themes (Coral, Magenta, White, Yellow) +
   your own profiles you can save/rename/delete from Preferences
 - Global shortcuts: **F8** shows/hides the highlight, **F9** cycles to the
   next profile
