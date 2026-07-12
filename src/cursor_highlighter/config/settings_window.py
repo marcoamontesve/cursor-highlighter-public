@@ -7,7 +7,7 @@ la app.
 """
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor
+from PyQt6.QtGui import QColor, QIcon
 from PyQt6.QtWidgets import (
     QColorDialog,
     QComboBox,
@@ -33,6 +33,7 @@ from cursor_highlighter.config.store import (
 )
 from cursor_highlighter.config.theme import BORDER
 from cursor_highlighter.kwin_bridge.client import OverlayClient
+from cursor_highlighter.tray.icon import KOFI_ICON_PATH, open_donate_page
 
 SIZE_RANGE = (10, 300)
 OPACITY_RANGE = (10, 100)  # porcentaje
@@ -162,6 +163,9 @@ class SettingsWindow(QDialog):
         restore_button = QPushButton("Restaurar valores por defecto")
         restore_button.clicked.connect(self._on_restore_defaults)
         buttons.addWidget(restore_button)
+        donate_button = QPushButton(QIcon(str(KOFI_ICON_PATH)), "Donar")
+        donate_button.clicked.connect(open_donate_page)
+        buttons.addWidget(donate_button)
         close_button = QPushButton("Cerrar")
         close_button.clicked.connect(self.close)
         buttons.addWidget(close_button)

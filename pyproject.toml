@@ -20,3 +20,4 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "cursor_highlighter.overlay" = ["qml/*.qml"]
+"cursor_highlighter.tray" = ["*.png"]
