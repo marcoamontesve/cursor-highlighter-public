@@ -9,6 +9,7 @@ DEFAULT_OPACITY = 0.6
 DEFAULT_RING_THICKNESS = 4
 DEFAULT_LEFT_CLICK_COLOR = "#4a9eff"
 DEFAULT_RIGHT_CLICK_COLOR = "#4aff8f"
+DEFAULT_HIGHLIGHT_VISIBLE = True
 
 
 class CursorState(QObject):
@@ -21,6 +22,7 @@ class CursorState(QObject):
     ringThicknessChanged = pyqtSignal()
     leftClickColorChanged = pyqtSignal()
     rightClickColorChanged = pyqtSignal()
+    highlightVisibleChanged = pyqtSignal()
 
     # Pulsos disparados en cada click (izq/der); QML los escucha para animar
     # el anillo de onda expansiva. No llevan datos, son solo un "trigger".
@@ -38,6 +40,7 @@ class CursorState(QObject):
         self._ring_thickness = DEFAULT_RING_THICKNESS
         self._left_click_color = DEFAULT_LEFT_CLICK_COLOR
         self._right_click_color = DEFAULT_RIGHT_CLICK_COLOR
+        self._highlight_visible = DEFAULT_HIGHLIGHT_VISIBLE
 
     def getX(self) -> int:
         return self._x
@@ -147,3 +150,15 @@ class CursorState(QObject):
     @pyqtSlot()
     def triggerRightClick(self) -> None:
         self.rightClickPulse.emit()
+
+    def getHighlightVisible(self) -> bool:
+        return self._highlight_visible
+
+    def setHighlightVisible(self, value: bool) -> None:
+        if value != self._highlight_visible:
+            self._highlight_visible = value
+            self.highlightVisibleChanged.emit()
+
+    highlightVisible = pyqtProperty(
+        bool, fget=getHighlightVisible, fset=setHighlightVisible, notify=highlightVisibleChanged
+    )

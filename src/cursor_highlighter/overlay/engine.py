@@ -100,20 +100,32 @@ class HighlighterApp:
             )
             return False
 
+        app = QGuiApplication.instance()
+        app.screenAdded.connect(self._refresh_screen_list)
+        app.screenRemoved.connect(self._refresh_screen_list)
+
         self.qml_engine = QQmlApplicationEngine()
         self.qml_engine.rootContext().setContextProperty("cursorState", self.cursor_state)
+        self._refresh_screen_list()
         self.qml_engine.load(str(QML_DIR / "CursorHighlight.qml"))
         if not self.qml_engine.rootObjects():
             print("ERROR: no se pudo cargar CursorHighlight.qml", file=sys.stderr)
             return False
         return True
 
+    def _refresh_screen_list(self, *_args) -> None:
+        """Reexpone la lista de pantallas conectadas; el Repeater de la QML crea
+        o destruye una ventana de overlay por monitor cada vez que esto cambia
+        (conectar/desconectar un monitor con la app corriendo)."""
+        self.qml_engine.rootContext().setContextProperty(
+            "screenList", QGuiApplication.screens()
+        )
+
     def is_visible(self) -> bool:
-        return bool(self.qml_engine.rootObjects()[0].isVisible())
+        return self.cursor_state.highlightVisible
 
     def toggle_visible(self) -> None:
-        root = self.qml_engine.rootObjects()[0]
-        root.setVisible(not root.isVisible())
+        self.cursor_state.highlightVisible = not self.cursor_state.highlightVisible
 
 
 def run_cursor_highlight() -> int:
